@@ -58,6 +58,8 @@ const Target = memo((props: TargetProps) => {
       const time = Number(countdownRef.current!.textContent);
 
       if (time === 0) {
+        targetRef.current!.style.display = 'none';
+        targetRef.current!.style.zIndex = '-99999';
         clearInterval(intervalRef.current);
         return;
       }
