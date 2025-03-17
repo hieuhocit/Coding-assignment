@@ -1,0 +1,41 @@
+.title {
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.won {
+  color: green;
+}
+.lost {
+  color: orange;
+}
+
+.timer-container,
+.point-container {
+  display: flex;
+  margin-bottom: 4px;
+  .label {
+    width: 100px;
+  }
+}
+
+.actions {
+  margin-block: 12px;
+}
+
+.btn {
+  border: none;
+  padding: 0.25rem 1rem;
+  background-color: #ccc;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  margin-right: 12px;
+}
+
+.auto-play {
+  text-transform: capitalize;
+}
+
+.auto-play span {
+  text-transform: uppercase;
+}
