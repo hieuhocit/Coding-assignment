@@ -32,13 +32,22 @@ const Target = memo((props: TargetProps) => {
   const intervalRef = useRef<undefined | number>(undefined);
   const countdownRef = useRef<null | HTMLSpanElement>(null);
 
+  // Handle when auto play is stopped
+  const timeoutRef = useRef<undefined | number>(undefined);
+
   // Auto play
   useEffect(() => {
     if (props.autoPlay && props.playNow) {
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         handleClickTarget();
       }, 1000);
     }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [props.autoPlay, props.playNow]);
 
   // Countdown
