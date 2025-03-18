@@ -10,11 +10,13 @@ import { TargetType } from '../game/Game';
 
 type TargetProps = {
   target: TargetType;
-  status: Status | null;
+  // status: Status | null;
+  statusRef: React.RefObject<Status | null>;
   handleSelectedTarget: (target: number) => void;
   zIndex: number;
   playNow: boolean;
-  autoPlay: boolean;
+  // autoPlay: boolean;
+  autoPlayRef: React.RefObject<boolean>;
   targetSize: {
     width: number;
     height: number;
@@ -37,7 +39,12 @@ const Target = memo((props: TargetProps) => {
 
   // Auto play
   useEffect(() => {
-    if (props.autoPlay && props.playNow) {
+    // if (props.autoPlay && props.playNow) {
+    //   timeoutRef.current = setTimeout(() => {
+    //     handleClickTarget();
+    //   }, 1000);
+    // }
+    if (props.playNow) {
       timeoutRef.current = setTimeout(() => {
         handleClickTarget();
       }, 1000);
@@ -48,7 +55,7 @@ const Target = memo((props: TargetProps) => {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [props.autoPlay, props.playNow]);
+  }, [props.playNow]);
 
   // Countdown
   useEffect(() => {
@@ -57,7 +64,13 @@ const Target = memo((props: TargetProps) => {
     intervalRef.current = setInterval(() => {
       const time = Number(countdownRef.current!.textContent);
 
+      if (props.statusRef.current !== Status.PLAYING) {
+        targetRef.current!.style.animationPlayState = 'paused';
+        clearInterval(intervalRef.current);
+      }
+
       if (time === 0) {
+        // Avoiding cover the target behind
         targetRef.current!.style.display = 'none';
         targetRef.current!.style.zIndex = '-99999';
         clearInterval(intervalRef.current);
@@ -72,22 +85,24 @@ const Target = memo((props: TargetProps) => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [hasClicked, props.target.time]);
+  }, [hasClicked, props.target.time, props.statusRef]);
 
   // Animation
-  useEffect(() => {
-    if (props.status !== Status.PLAYING) {
-      targetRef.current!.style.animationPlayState = 'paused';
-      clearInterval(intervalRef.current);
-    }
-  }, [props.status]);
+  // useEffect(() => {
+  //   if (props.status !== Status.PLAYING) {
+  //     targetRef.current!.style.animationPlayState = 'paused';
+  //     clearInterval(intervalRef.current);
+  //   }
+  // }, [props.status]);
 
   const handleClickTarget = () => {
     // Prevent click when auto play
-    if (props.autoPlay && !props.playNow) return;
+    // if (props.autoPlay && !props.playNow) return;
+    if (props.autoPlayRef.current && !props.playNow) return;
 
     // Not click when not playing and has clicked
-    if (props.status !== 'PLAYING' || hasClicked) return;
+    // if (props.status !== 'PLAYING' || hasClicked) return;
+    if (props.statusRef.current !== 'PLAYING' || hasClicked) return;
 
     // Set state when clicked
     setHasClicked(true);

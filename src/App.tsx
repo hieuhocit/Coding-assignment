@@ -16,7 +16,7 @@ export enum Status {
 }
 
 function App() {
-  const [points, setPoints] = useState(5);
+  const [points, setPoints] = useState(50000);
   const [currentPoints, setCurrentPoints] = useState(0);
 
   const [status, setStatus] = useState<Status | null>(null);

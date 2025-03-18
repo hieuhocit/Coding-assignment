@@ -1,5 +1,5 @@
 // React
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 // Styles
 import './Header.css';
@@ -69,7 +69,7 @@ const Header = (props: HeaderProps) => {
   );
 };
 
-function Timer({ status }: { status: Status | null }) {
+const Timer = memo(({ status }: { status: Status | null }) => {
   const intervalRef = useRef<undefined | number>(undefined);
   const timerRef = useRef<null | HTMLSpanElement>(null);
 
@@ -99,6 +99,6 @@ function Timer({ status }: { status: Status | null }) {
       </p>
     </div>
   );
-}
+});
 
 export default Header;

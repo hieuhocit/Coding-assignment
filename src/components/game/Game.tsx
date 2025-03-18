@@ -1,5 +1,12 @@
 // React
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 
 // Components
 import Target from '../target/Target';
@@ -27,30 +34,47 @@ type GameProps = {
 
 const Game = memo((props: GameProps) => {
   const containerRef = useRef<null | HTMLDivElement>(null);
-  const [nextTarget, setNextTarget] = useState<number | null>(null);
+  const [nextTarget, setNextTarget] = useState<number>(0);
 
   const [targets, setTargets] = useState<TargetType[]>([]);
 
   const targetSizeRef = useRef({ width: 50, height: 50 });
 
+  const [isPending, startTransition] = useTransition();
+
+  //
+  const autoPlayRef = useRef(props.autoPlay);
+  const stateRef = useRef(props.status);
+
+  // Prevent render all targets when autoplay is changed
+  useEffect(() => {
+    stateRef.current = props.status;
+    autoPlayRef.current = props.autoPlay;
+  }, [props.autoPlay, props.status]);
+
+  // Create targets
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const domRect = containerRef.current.getBoundingClientRect();
-    const width = domRect.width;
-    const height = domRect.height;
+    const handleNewTargets = () => {
+      const domRect = containerRef.current!.getBoundingClientRect();
+      const width = domRect.width;
+      const height = domRect.height;
 
-    const newTargets = Array.from({ length: props.points }, (_, index) => {
-      return {
-        value: index + 1,
-        x: createRandomNumber(0, width - targetSizeRef.current.width - 5),
-        y: createRandomNumber(0, height - targetSizeRef.current.height - 5),
-        time: 3,
-      };
-    });
+      const newTargets = Array.from({ length: props.points }, (_, index) => {
+        return {
+          value: index + 1,
+          x: createRandomNumber(0, width - targetSizeRef.current.width - 5),
+          y: createRandomNumber(0, height - targetSizeRef.current.height - 5),
+          time: 3,
+        };
+      });
 
-    setNextTarget(1);
-    setTargets(newTargets);
+      setNextTarget(1);
+      setTargets(newTargets);
+    };
+
+    startTransition(handleNewTargets);
   }, [props.points]);
 
   const handleSelectedTarget = useCallback(
@@ -63,7 +87,7 @@ const Game = memo((props: GameProps) => {
             setTimeout(() => {
               props.setStatus(Status.WON);
             }, 3000);
-            return null;
+            return prevNextTarget;
           }
 
           // NOT THE LAST TARGET
@@ -71,8 +95,9 @@ const Game = memo((props: GameProps) => {
         }
 
         // Incorrect target
-        props.setStatus(Status.LOST);
-        return null;
+        // Use setTimeout to delay setStatus to avoid error setState when rendering another component
+        setTimeout(() => props.setStatus(Status.LOST), 0);
+        return prevNextTarget;
       });
     },
     [props.points]
@@ -81,23 +106,28 @@ const Game = memo((props: GameProps) => {
   return (
     <main className='main'>
       <div ref={containerRef} className='container'>
+        {isPending && <div className='loading'>Loading...</div>}
         {targets.length > 0 &&
           targets.map((target, index) => {
-            return (
-              <Target
-                key={index}
-                target={target}
-                status={props.status}
-                handleSelectedTarget={handleSelectedTarget}
-                zIndex={targets.length - target.value}
-                autoPlay={props.autoPlay}
-                playNow={props.autoPlay ? nextTarget === target.value : false}
-                targetSize={targetSizeRef.current}
-              />
-            );
+            if (index - nextTarget < 1500)
+              return (
+                <Target
+                  key={index}
+                  target={target}
+                  // status={props.status}
+                  statusRef={stateRef}
+                  handleSelectedTarget={handleSelectedTarget}
+                  zIndex={targets.length - target.value}
+                  // autoPlay={props.autoPlay}
+                  autoPlayRef={autoPlayRef}
+                  playNow={props.autoPlay ? nextTarget === target.value : false}
+                  targetSize={targetSizeRef.current}
+                />
+              );
+            else return null;
           })}
       </div>
-      {nextTarget && (
+      {props.status === Status.PLAYING && nextTarget && (
         <div className='next-target'>
           <p>
             Next: <span>{nextTarget}</span>
