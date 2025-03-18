@@ -127,7 +127,7 @@ const Game = memo((props: GameProps) => {
             else return null;
           })}
       </div>
-      {props.status === Status.PLAYING && nextTarget && (
+      {!isPending && props.status === Status.PLAYING && nextTarget && (
         <div className='next-target'>
           <p>
             Next: <span>{nextTarget}</span>
